@@ -25,7 +25,6 @@ library(tidyverse)
 library(DT)
 
 knitr::opts_chunk$set(comment = "", message = FALSE, warning = FALSE)
-
 ```
 ### {.tabset .tabset-fade}
 
@@ -47,8 +46,8 @@ teamCount <- length(standings$name)
 # SoS Calculation
 # Rank values by points against within week
 ptsAgainstRanked <- results %>%
-    group_by(week) %>%
-    mutate(SoS = order(order(pointsAgainst, decreasing = F)))
+  group_by(week) %>%
+  mutate(SoS = order(order(pointsAgainst, decreasing = F)))
 # Subset for all current values
 ptsAgainstRanked <- subset(ptsAgainstRanked, ptsAgainstRanked$pointsAgainst > 0)
 # Average opposed ranks by team
@@ -62,7 +61,7 @@ eloOutput1 <- elo.run(score(homePoints, awayPoints) ~ homeTeam + awayTeam, data 
 eloOutput <- elo.run(mov(homePoints, awayPoints) ~ homeTeam + awayTeam, data = boxScore, k = 1)
 eloRating <- data.frame(as.data.frame(eloOutput$teams), as.data.frame(final.elos(eloOutput)))
 eloRating$final.elos.eloOutput. <- round(eloRating$final.elos.eloOutput., digits = 0)
-#rownames(eloRating) <- c(1:teamCount)
+# rownames(eloRating) <- c(1:teamCount)
 
 # ELO delta
 lastWeekNum <- str_pad(as.character(max(as.numeric(boxScore$week))), 2, pad = "0")
@@ -78,42 +77,48 @@ eloDelta <- eloRating$final.elos.eloOutput. - lastEloRating$final.elos.lastElo.
 standingsTable <- merge(eloRating, standings[, c("logo", "name", "lastName", "wins", "losses", "percentage", "pointsFor", "pointsAgainst", "streakLength", "streakType", "acq", "dues")], by.x = "eloOutput.teams", by.y = "name")
 standingsTable$streakLength <- ifelse(standingsTable$streakType %in% ("LOSS"), standingsTable$streakLength * -1, standingsTable$streakLength)
 standingsTable <- merge(standingsTable, finalSos, by.x = "eloOutput.teams", by.y = "name")
-standingsTable <- data.frame(x = standingsTable$logo,
-                             Team = standingsTable$eloOutput.teams,
-                             NAME = standingsTable$lastName,
-                             ELO = standingsTable$final.elos.eloOutput.,
-                             D = eloDelta,
-                             SoS = standingsTable$SoS,
-                             W = standingsTable$wins,
-                             L = standingsTable$losses,
-                             PCT = standingsTable$percentage,
-                             S = standingsTable$streakLength,
-                             PTS4 = standingsTable$pointsFor,
-                             PTSA = standingsTable$pointsAgainst,
-                             ACQ = standingsTable$acq)
-standingsTable <- standingsTable[order(-standingsTable$ELO),]
+standingsTable <- data.frame(
+  x = standingsTable$logo,
+  Team = standingsTable$eloOutput.teams,
+  NAME = standingsTable$lastName,
+  ELO = standingsTable$final.elos.eloOutput.,
+  D = eloDelta,
+  SoS = standingsTable$SoS,
+  W = standingsTable$wins,
+  L = standingsTable$losses,
+  PCT = standingsTable$percentage,
+  S = standingsTable$streakLength,
+  PTS4 = standingsTable$pointsFor,
+  PTSA = standingsTable$pointsAgainst,
+  ACQ = standingsTable$acq
+)
+standingsTable <- standingsTable[order(-standingsTable$ELO), ]
 rownames(standingsTable) <- c(1:teamCount)
 standingsTable$SoS <- round(standingsTable$SoS, digits = 2)
 standingsTable$PCT <- round(standingsTable$PCT, digits = 2)
 
 # Generate html formatted table of power rankings
-DT::datatable(standingsTable, options = list(pageLength = teamCount, dom = 'tip', paging = FALSE), style = "bootstrap", escape = FALSE) %>%
-    formatStyle('SoS',
-                background = styleColorBar(standingsTable$SoS, 'lightblue'),
-                backgroundSize = '100% 90%',
-                backgroundRepeat = 'no-repeat',
-                backgroundPosition = 'center') %>%
-    formatStyle('ACQ',
-                background = styleColorBar(standingsTable$ACQ, 'lightblue'),
-                backgroundSize = '100% 90%',
-                backgroundRepeat = 'no-repeat',
-                backgroundPosition = 'center') %>%
-    formatStyle('D',
-                color = styleInterval(0, c('red', 'green')),
-                fontWeight = 'bold') %>%
-    formatStyle('S',
-                color = styleInterval(0, c('red', 'green')),
-                fontWeight = 'bold')
+DT::datatable(standingsTable, options = list(pageLength = teamCount, dom = "tip", paging = FALSE), style = "bootstrap", escape = FALSE) %>%
+  formatStyle("SoS",
+    background = styleColorBar(standingsTable$SoS, "lightblue"),
+    backgroundSize = "100% 90%",
+    backgroundRepeat = "no-repeat",
+    backgroundPosition = "center"
+  ) %>%
+  formatStyle("ACQ",
+    background = styleColorBar(standingsTable$ACQ, "lightblue"),
+    backgroundSize = "100% 90%",
+    backgroundRepeat = "no-repeat",
+    backgroundPosition = "center"
+  ) %>%
+  formatStyle("D",
+    color = styleInterval(0, c("red", "green")),
+    fontWeight = "bold"
+  ) %>%
+  formatStyle("S",
+    color = styleInterval(0, c("red", "green")),
+    fontWeight = "bold"
+  )
 #    formatStyle('DUES',
 #                backgroundColor = styleEqual(unique(standingsTable$DUES),
 #                                             c('lightgreen', 'lightpink')))
@@ -129,29 +134,30 @@ These are your ELO-based predictions for this week's matchups. Since ELO is a pr
 # Assemble data structure for current week matchups
 weeksMatchups <- subset(boxScoreFull, week == str_pad(totalJSON$scoringPeriodId, 2, pad = "0"))
 weeksMatchups <- data.frame(homeTeam = weeksMatchups$homeTeam, awayTeam = weeksMatchups$awayTeam)
-weeksMatchups <- merge(weeksMatchups, standings[,c("name", "kableLogo")], by.x = "homeTeam", by.y = "name", all.x = T)
-weeksMatchups <- merge(weeksMatchups, standings[,c("name", "kableLogo")], by.x = "awayTeam", by.y = "name")
+weeksMatchups <- merge(weeksMatchups, standings[, c("name", "kableLogo")], by.x = "homeTeam", by.y = "name", all.x = T)
+weeksMatchups <- merge(weeksMatchups, standings[, c("name", "kableLogo")], by.x = "awayTeam", by.y = "name")
 weeksMatchups1 <- data.frame(homeTeam = weeksMatchups$awayTeam, awayTeam = weeksMatchups$homeTeam)
 
 # Make ELO based matchup outcome predictions
 matchupPredictions <- data.frame(
-                                 x = weeksMatchups$kableLogo.x,
-                                 HomeTeam = weeksMatchups$homeTeam,
-                                 PoW = percent(predict(eloOutput, newdata = weeksMatchups[1:2])),
-                                 xx = weeksMatchups$kableLogo.y,
-                                 AwayTeam = weeksMatchups$awayTeam,
-                                 PoW. = percent(predict(eloOutput, newdata = weeksMatchups1[1:2])))
+  x = weeksMatchups$kableLogo.x,
+  HomeTeam = weeksMatchups$homeTeam,
+  PoW = percent(predict(eloOutput, newdata = weeksMatchups[1:2])),
+  xx = weeksMatchups$kableLogo.y,
+  AwayTeam = weeksMatchups$awayTeam,
+  PoW. = percent(predict(eloOutput, newdata = weeksMatchups1[1:2]))
+)
 
 # Create kable table of matchup predictions
 matchupPredictions %>%
   mutate(PoW = color_tile(
-    "lightblue", "lightpink")(PoW),
-  ) %>%
+    "lightblue", "lightpink"
+  )(PoW), ) %>%
   mutate(PoW. = color_tile(
-    #AwayPoW, color = "white", bold = T,
-    #background = spec_color(AwayPoW, option = "viridis", direction = -1),
-    "lightblue", "lightpink")(PoW.),
-  ) %>%
+    # AwayPoW, color = "white", bold = T,
+    # background = spec_color(AwayPoW, option = "viridis", direction = -1),
+    "lightblue", "lightpink"
+  )(PoW.), ) %>%
   kable(escape = F) %>%
   kable_styling(c("striped"), font_size = 20, full_width = F)
 

@@ -19,20 +19,20 @@ knitr::opts_chunk$set(comment = "", message = FALSE, warning = FALSE)
 
 # https://fantasy.espn.com/football/league/settings?leagueId=28124948&seasonId=2019
 # Define base url scheme
-base = "http://fantasy.espn.com/apis/v3/games/ffl/seasons/"
-year = "2019"
-mid = "/segments/0/leagues/"
-leagueID = "28124948"
+base <- "http://fantasy.espn.com/apis/v3/games/ffl/seasons/"
+year <- "2019"
+mid <- "/segments/0/leagues/"
+leagueID <- "28124948"
 
 # Define url tail variables
-mTeam = "?view=mTeam"
-mMatchupScore = "&view=mMatchupScore"
-mRoster = "&view=mRoster"
-kona_player_info = "&view=kona_player_info"
-player_wl = "&view=player_wl"
-mSchedule = "&view=mSchedule"
-mBoxscore = "&view=mBoxscore"
-mLiveScoring = "&view=mLiveScoring"
+mTeam <- "?view=mTeam"
+mMatchupScore <- "&view=mMatchupScore"
+mRoster <- "&view=mRoster"
+kona_player_info <- "&view=kona_player_info"
+player_wl <- "&view=player_wl"
+mSchedule <- "&view=mSchedule"
+mBoxscore <- "&view=mBoxscore"
+mLiveScoring <- "&view=mLiveScoring"
 
 # url = paste0(base,year,mid,leagueID,proTeamSchedules)
 # espnGet <- httr::GET(url = url)
@@ -41,42 +41,43 @@ mLiveScoring = "&view=mLiveScoring"
 # tmpJSON <- jsonlite::fromJSON(espnRaw)
 
 # Create JSON object
-url = paste0(base,year,mid,leagueID,mTeam,mMatchupScore,mRoster,kona_player_info,player_wl,mSchedule,mBoxscore,mLiveScoring)
+url <- paste0(base, year, mid, leagueID, mTeam, mMatchupScore, mRoster, kona_player_info, player_wl, mSchedule, mBoxscore, mLiveScoring)
 espnGet <- httr::GET(url = url)
 # espnGet$status_code
 espnRaw <- rawToChar(espnGet$content)
 totalJSON <- jsonlite::fromJSON(espnRaw)
 
 # Import JSON object from airyards
-df_air <- fromJSON('http://airyards.com/2019/weeks')
+df_air <- fromJSON("http://airyards.com/2019/weeks")
 
 # Assemble team standings table
 teamDetail <- totalJSON$teams
 teamDetail$divisionId <- as.character(teamDetail$divisionId)
 teamRecord <- totalJSON$teams$record$overall
-#teamDetail <- teamDetail[, c("id", "abbrev", "logo", "divisionId", "transactionCounter")]
-#colnames(teamDetail)[1] <- "teamId"
-#teamDetail <- cbind(name = paste(totalJSON$teams$location, totalJSON$teams$nickname), teamDetail)
-#teamRecord <- totalJSON$teams$record$overall
+# teamDetail <- teamDetail[, c("id", "abbrev", "logo", "divisionId", "transactionCounter")]
+# colnames(teamDetail)[1] <- "teamId"
+# teamDetail <- cbind(name = paste(totalJSON$teams$location, totalJSON$teams$nickname), teamDetail)
+# teamRecord <- totalJSON$teams$record$overall
 dues <- c("paid", "unpaid", "paid", "paid", "unpaid", "paid", "paid", "paid", "paid", "paid")
 name <- paste(totalJSON$teams$location, totalJSON$teams$nickname)
 user <- data.frame(lastName = totalJSON$members$lastName, userId = totalJSON$members$id)
-#standings <- cbind(teamDetail, teamRecord)
+# standings <- cbind(teamDetail, teamRecord)
 standings <- data.frame(name,
-                        teamId = teamDetail$id,
-                        userId = unlist(teamDetail$owners, use.names = FALSE),
-                        abbrev = teamDetail$abbrev,
-                        logo = teamDetail$logo,
-                        divisionId = teamDetail$divisionId,
-                        percentage = teamRecord$percentage,
-                        pointsAgainst = teamRecord$pointsAgainst,
-                        pointsFor = teamRecord$pointsFor,
-                        streakLength = teamRecord$streakLength,
-                        streakType = teamRecord$streakType,
-                        wins = teamRecord$wins,
-                        losses = teamRecord$losses,
-                        acq = teamDetail$transactionCounter$acquisitions,
-                        dues)
+  teamId = teamDetail$id,
+  userId = unlist(teamDetail$owners, use.names = FALSE),
+  abbrev = teamDetail$abbrev,
+  logo = teamDetail$logo,
+  divisionId = teamDetail$divisionId,
+  percentage = teamRecord$percentage,
+  pointsAgainst = teamRecord$pointsAgainst,
+  pointsFor = teamRecord$pointsFor,
+  streakLength = teamRecord$streakLength,
+  streakType = teamRecord$streakType,
+  wins = teamRecord$wins,
+  losses = teamRecord$losses,
+  acq = teamDetail$transactionCounter$acquisitions,
+  dues
+)
 
 ## Image format for kable style tables
 standings$kableLogo <- paste0("![](", standings$logo, "){width=50px}")
@@ -119,7 +120,8 @@ playerData <- totalJSON$players$player
 playerRanking <- totalJSON$players$ratings$"0"
 playerTable <- data.frame(name = playerData$fullName, id = playerData$id, ffbTeam = totalJSON$players$onTeamId, proTeam = playerData$proTeamId, positionId = playerData$defaultPositionId, status = totalJSON$players$status, rank = playerRanking$positionalRanking, pointsTotal = playerRanking$totalRating)
 playerTable <- data.frame(lapply(playerTable, function(x) {
-                                     gsub(" Jr.", "", x)}))
+  gsub(" Jr.", "", x)
+}))
 
 airTable <- merge(df_air, playerTable, by.x = "full_name", by.y = "name")
 airTable$position[airTable$position == "FB"] <- "RB"

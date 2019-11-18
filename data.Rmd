@@ -34,7 +34,6 @@ library(grid)
 # library(PlayerRatings)
 # library(formattable)
 knitr::opts_chunk$set(comment = "", message = FALSE, warning = FALSE)
-
 ```
 
 ### {.tabset .tabset-fade}
@@ -82,7 +81,7 @@ ggplot(results1, aes(week, totalPoints, group = factor(name))) +
   geom_line(aes(color = factor(name))) +
   stat_summary(aes(y = totalPoints, group = 1), fun.y = mean, geom = "line", linetype = "dotted") +
   theme(axis.text.x = element_text(angle = 330, hjust = 0), legend.title = element_blank()) +
-  #theme(axis.text.x = element_text(angle = 330, hjust = 0), legend.title = element_blank(), legend.position = "bottom") +
+  # theme(axis.text.x = element_text(angle = 330, hjust = 0), legend.title = element_blank(), legend.position = "bottom") +
   labs(y = "Points") +
   ggtitle(expression(atop("Point Totals by Week", atop(italic("dotted line = weekly average", ""))))) +
   scale_fill_viridis(discrete = T)
@@ -94,18 +93,18 @@ ggplot(results1, aes(week, totalPoints, group = factor(name))) +
 p <- as.character(standings$name)
 
 j <- function(k) {
-    g <- ggplot(results1, aes(week, totalPoints, group = factor(name))) +
-         geom_line(color = "grey") +
-         geom_line(data = subset(results1, name == k), color = "red") +
-         scale_colour_manual(name = "Team") +
-         # geom_dl(aes(label = TEAM), data = subset(x, TEAM == k), method = "first.qp") +
-         stat_summary(aes(y = totalPoints, group = 1), fun.y = mean, geom = "line", linetype = "dotted") +
-         theme(axis.title.x = element_blank(), axis.text.x = element_text(angle = 330, hjust = 0)) +
-         labs(y = "Points", title = paste("Weekly Points ~", k, "(red line)", sep = " "))
+  g <- ggplot(results1, aes(week, totalPoints, group = factor(name))) +
+    geom_line(color = "grey") +
+    geom_line(data = subset(results1, name == k), color = "red") +
+    scale_colour_manual(name = "Team") +
+    # geom_dl(aes(label = TEAM), data = subset(x, TEAM == k), method = "first.qp") +
+    stat_summary(aes(y = totalPoints, group = 1), fun.y = mean, geom = "line", linetype = "dotted") +
+    theme(axis.title.x = element_blank(), axis.text.x = element_text(angle = 330, hjust = 0)) +
+    labs(y = "Points", title = paste("Weekly Points ~", k, "(red line)", sep = " "))
 }
 
 lapply(p, j)
-#lapply(p, function(k) j(k))
+# lapply(p, function(k) j(k))
 ```
 
 #### Pts Density {.tabset .tabset-fade}
@@ -135,7 +134,7 @@ Points for and points against. This is the lowest hanging fruit in fantasy footb
 ```{r}
 ggplot(standings, aes(pointsFor, pointsAgainst, label = factor(name))) +
   geom_label(aes(fill = percentage), color = "white", hjust = "inward") +
-  labs(title = "Points For vs Points Against", x = "Points For", y = "Points Against")+
+  labs(title = "Points For vs Points Against", x = "Points For", y = "Points Against") +
   scale_fill_gradient(name = "Record")
 ```
 
@@ -173,7 +172,7 @@ Also, I've included ELO. The nature of the ranking is both indicative of histori
 ```{r}
 ggplot(standingsTable, aes(PCT, SoS, label = factor(Team))) +
   geom_label(aes(fill = ELO), color = "white", hjust = "inward") +
-  labs(title = "Team Strength", x = "Record", y = "SoS: higher = harder sched")+
+  labs(title = "Team Strength", x = "Record", y = "SoS: higher = harder sched") +
   scale_fill_gradient(name = "ELO Rating")
 ```
 
@@ -185,26 +184,27 @@ This is my first graph on actual player performance. Air Yards are a relatively 
 
 ```{r}
 airYardsByName <- airTable %>%
-    group_by(full_name, position, ffbTeam) %>%
-    summarize(targets = mean(tar),
-              airYards = mean(air_yards))
+  group_by(full_name, position, ffbTeam) %>%
+  summarize(
+    targets = mean(tar),
+    airYards = mean(air_yards)
+  )
 
 airYardsByName <- subset(airYardsByName, airYardsByName$position %in% c("WR", "RB", "TE"))
 
 # Sort by value to show top performers
-airYardsByName <- airYardsByName[order(-airYardsByName$airYards),]
+airYardsByName <- airYardsByName[order(-airYardsByName$airYards), ]
 airYardsByName$airYards <- round(airYardsByName$airYards, digits = 2)
 airYardsByName$targets <- round(airYardsByName$targets, digits = 2)
 airYardsUnrostered <- subset(airYardsByName, airYardsByName$ffbTeam == 0)
 
 # All players separated by position
 ggplot(airYardsByName, aes(x = targets, y = airYards, color = position, label = full_name)) +
-    geom_point(size = 2, show.legend = F) +
-    # geom_label_repel(data = subset(airYardsByName, airYards > 100 | targets > 10))
-    geom_label_repel(data = Reduce(rbind, by(airYardsByName, airYardsByName["position"], head, n = 5)), color = "black", box.padding = 1, alpha = 0.6, force = 40, label.padding = 0.1) +
-    facet_grid(. ~ position) +
-    theme_bw()
-
+  geom_point(size = 2, show.legend = F) +
+  # geom_label_repel(data = subset(airYardsByName, airYards > 100 | targets > 10))
+  geom_label_repel(data = Reduce(rbind, by(airYardsByName, airYardsByName["position"], head, n = 5)), color = "black", box.padding = 1, alpha = 0.6, force = 40, label.padding = 0.1) +
+  facet_grid(. ~ position) +
+  theme_bw()
 ```
 
 ##### Unrostered
@@ -212,12 +212,12 @@ ggplot(airYardsByName, aes(x = targets, y = airYards, color = position, label = 
 ```{r}
 # Filtered for unrostered players
 ggplot(airYardsUnrostered, aes(x = targets, y = airYards, color = position, label = full_name)) +
-    geom_point(data = airYardsByName, color = "grey") +
-    geom_point(show.legend = F) +
-    # geom_label_repel(data = subset(airYardsByName, airYards > 100 | targets > 10))
-    geom_label_repel(data = Reduce(rbind, by(airYardsUnrostered, airYardsUnrostered["position"], head, n = 5)), color = "black", alpha = 0.6, force = 40, label.padding = 0.1) +
-    facet_grid(. ~ position) +
-    theme_bw()
+  geom_point(data = airYardsByName, color = "grey") +
+  geom_point(show.legend = F) +
+  # geom_label_repel(data = subset(airYardsByName, airYards > 100 | targets > 10))
+  geom_label_repel(data = Reduce(rbind, by(airYardsUnrostered, airYardsUnrostered["position"], head, n = 5)), color = "black", alpha = 0.6, force = 40, label.padding = 0.1) +
+  facet_grid(. ~ position) +
+  theme_bw()
 ```
 
 ##### Table
