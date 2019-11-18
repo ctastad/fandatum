@@ -1,0 +1,473 @@
+---
+title: "![](g1397.svg) Clubhouse"
+output:
+  html_document:
+    includes:
+        in_header: "favicon.html"
+    code_folding: hide
+    theme: paper
+---
+
+```{r echo=FALSE, message=FALSE}
+# Dependencies
+
+library(rmarkdown)
+library(knitr)
+library(tidyverse)
+library(jsonlite)
+knitr::opts_chunk$set(comment = "", message = FALSE, warning = FALSE)
+
+# https://fantasy.espn.com/football/league/settings?leagueId=28124948&seasonId=2019
+# Define base url scheme
+base = "http://fantasy.espn.com/apis/v3/games/ffl/seasons/"
+year = "2019"
+mid = "/segments/0/leagues/"
+leagueID = "28124948"
+
+# Define url tail variables
+mTeam = "?view=mTeam"
+mMatchupScore = "&view=mMatchupScore"
+mRoster = "&view=mRoster"
+kona_player_info = "&view=kona_player_info"
+player_wl = "&view=player_wl"
+mSchedule = "&view=mSchedule"
+mBoxscore = "&view=mBoxscore"
+mLiveScoring = "&view=mLiveScoring"
+
+# url = paste0(base,year,mid,leagueID,proTeamSchedules)
+# espnGet <- httr::GET(url = url)
+# espnGet$status_code
+# espnRaw <- rawToChar(espnGet$content)
+# tmpJSON <- jsonlite::fromJSON(espnRaw)
+
+# Create JSON object
+url = paste0(base,year,mid,leagueID,mTeam,mMatchupScore,mRoster,kona_player_info,player_wl,mSchedule,mBoxscore,mLiveScoring)
+espnGet <- httr::GET(url = url)
+# espnGet$status_code
+espnRaw <- rawToChar(espnGet$content)
+totalJSON <- jsonlite::fromJSON(espnRaw)
+
+# Import JSON object from airyards
+df_air <- fromJSON('http://airyards.com/2019/weeks')
+
+# Assemble team standings table
+teamDetail <- totalJSON$teams
+teamDetail$divisionId <- as.character(teamDetail$divisionId)
+teamRecord <- totalJSON$teams$record$overall
+#teamDetail <- teamDetail[, c("id", "abbrev", "logo", "divisionId", "transactionCounter")]
+#colnames(teamDetail)[1] <- "teamId"
+#teamDetail <- cbind(name = paste(totalJSON$teams$location, totalJSON$teams$nickname), teamDetail)
+#teamRecord <- totalJSON$teams$record$overall
+dues <- c("paid", "unpaid", "paid", "paid", "unpaid", "paid", "paid", "paid", "paid", "paid")
+name <- paste(totalJSON$teams$location, totalJSON$teams$nickname)
+user <- data.frame(lastName = totalJSON$members$lastName, userId = totalJSON$members$id)
+#standings <- cbind(teamDetail, teamRecord)
+standings <- data.frame(name,
+                        teamId = teamDetail$id,
+                        userId = unlist(teamDetail$owners, use.names = FALSE),
+                        abbrev = teamDetail$abbrev,
+                        logo = teamDetail$logo,
+                        divisionId = teamDetail$divisionId,
+                        percentage = teamRecord$percentage,
+                        pointsAgainst = teamRecord$pointsAgainst,
+                        pointsFor = teamRecord$pointsFor,
+                        streakLength = teamRecord$streakLength,
+                        streakType = teamRecord$streakType,
+                        wins = teamRecord$wins,
+                        losses = teamRecord$losses,
+                        acq = teamDetail$transactionCounter$acquisitions,
+                        dues)
+
+## Image format for kable style tables
+standings$kableLogo <- paste0("![](", standings$logo, "){width=50px}")
+standings$logo <- paste0("<img src=\"", standings$logo, "\" style=\"height:50px;\"/>")
+standings <- merge(standings, user, by = "userId")
+
+# Assemble weekly results table
+schedule <- totalJSON$schedule
+schedule <- schedule[, c("id", "matchupPeriodId", "winner")]
+schedule$matchupPeriodId <- str_pad(schedule$matchupPeriodId, 2, pad = "0")
+colnames(schedule)[colnames(schedule) == "id"] <- "matchId"
+colnames(schedule)[colnames(schedule) == "matchupPeriodId"] <- "week"
+# The home and away teams are separate structures for espn
+awayTeam <- totalJSON$schedule$away
+awayTeam <- awayTeam[, c("teamId", "totalPoints")]
+
+homeTeam <- totalJSON$schedule$home
+homeTeam <- homeTeam[, c("teamId", "totalPoints")]
+
+homeTeam <- cbind(homeTeam, pointsAgainst = awayTeam$totalPoints, schedule)
+awayTeam <- cbind(awayTeam, pointsAgainst = homeTeam$totalPoints, schedule)
+# Combining home and away for easier data wrangling
+results <- rbind(homeTeam, awayTeam)
+results <- merge(results, standings[, c("name", "teamId")], all.x = T)
+results <- results[order(results$week), ]
+
+# Assemble boxscore table
+boxScore <- data.frame(week = schedule$week, homeTeamId = homeTeam$teamId, awayTeamId = awayTeam$teamId, homePoints = homeTeam$totalPoints, awayPoints = awayTeam$totalPoints)
+boxScore <- merge(boxScore, standings[c("name", "teamId")], by.x = "homeTeamId", by.y = "teamId", all.x = T)
+colnames(boxScore)[colnames(boxScore) == "name"] <- "homeTeam"
+boxScore <- merge(boxScore, standings[c("name", "teamId")], by.x = "awayTeamId", by.y = "teamId", all.x = T)
+colnames(boxScore)[colnames(boxScore) == "name"] <- "awayTeam"
+boxScoreFull <- boxScore
+boxScoreFull$homeTeam <- as.character(boxScoreFull$homeTeam)
+boxScoreFull$awayTeam <- as.character(boxScoreFull$awayTeam)
+boxScore <- subset(boxScore, homePoints != 0)
+
+# Assemble player info table
+playerData <- totalJSON$players$player
+playerRanking <- totalJSON$players$ratings$"0"
+playerTable <- data.frame(name = playerData$fullName, id = playerData$id, ffbTeam = totalJSON$players$onTeamId, proTeam = playerData$proTeamId, positionId = playerData$defaultPositionId, status = totalJSON$players$status, rank = playerRanking$positionalRanking, pointsTotal = playerRanking$totalRating)
+playerTable <- data.frame(lapply(playerTable, function(x) {
+                                     gsub(" Jr.", "", x)}))
+
+airTable <- merge(df_air, playerTable, by.x = "full_name", by.y = "name")
+airTable$position[airTable$position == "FB"] <- "RB"
+
+# Save workspace image to pass data
+save.image(file = "espnPull.Rdata")
+```
+
+***
+
+### Message {.tabset .tabset-fade}
+
+#### *
+
+Hello lovers, friends, family, and step-mom porn addicts (looking at you, Darin).
+
+Welcome to FFB2K19. I have personally selected each of you based on an exclusive set of criteria which shall not be fully disclosed but may or may not have strictly to do with your willingness to participate.
+
+I'm exited for the season and you're all welcome for not hosting a draft before Andrew Luck decided he was going to take his neckbeard off the roster forever.
+
+We will be using ESPN fantasy sports. You can access the league here
+
+https://fantasy.espn.com/football/league/join?leagueId=28124948&inviteId=dda88878-ca45-4603-8661-4891300c0001
+
+My co commissioner Chris Tastad will be running a website that features analytics and graphs and shit. I don't remember that link.
+
+Now onto the important part - the draft. The ESPN app/website has a draft lobby that we can all enter when the time comes. If you are not able to draft your team personally, auto draft will select the best available players for you.
+
+I'm thinking that we should shoot for a draft on the evening of Monday September 2 at 7 pm, but if that doesn't work for people we could do some other night that week.
+
+Please let me know if that does or doesn't work for you and we can figure out an alternative if needed.
+
+I look forward to enjoying this football season with all of you.
+
+
+Brady
+
+***
+
+#### Week 1
+
+Good morning boys,
+
+Week 1 is in the bag, and based on the 80 point performance of the Cheese Mustaches I'm guessing Danny might be as well, the damn drunken Sconnie. Living in Chicago can only mask so much of your natural born ways!
+
+It was a pretty good opening weekend as we saw some big scores but also some very low scores, and lots and lots of penalty flags.
+
+As with every week, some diamonds were left in the rough of a few team's bench which is a shame because Jack would have soundly fisted Darin had Austin Ekeler seen the light of day.
+
+New this year I'll be awarding the Big Swinging Dick (BSD) award to the highest point scorer of each week. This week it goes to yours truly, beating young Chris Gervais by the skin of my fore.
+
+But it's a new week, and the lowly Bucs square off with the Panthers on Thursday night, so make sure to get a new QB if you have James on your roster unless you also have Carolina's D.
+
+Once Tastad has the website up and running I'm sure he'll send over the link.
+
+Cheers dudes.
+
+***
+
+#### 2
+
+Good evening y'all,
+
+Time for your weekly FFB2K19 report.
+
+It seems that the NFL is now a reality TV drama - if you decide you don't want to play for your busted-ass team you can throw a toddler level tantrum about a helmet and get cut or just tell your agent you want to get traded so that all your teammates know you're over them. In both cases you probably wind up on the Patriots.
+
+In league news, we didn't have many compelling matchups, aside from the Chris Tastad and Jack Doyle matchup. The winners cruised comfortably to victories on good performances by many. The losers were banished quickly to the gutters as reliable players decided to loaf it.
+
+This week's BSD is Josh Perkins, as his squad delivered an inspired performance in honor of the late T Boone Pickens. The award seems appropriate seeing as that name has unlimited porn-ification potential.
+
+In addition to the BSD award, my co commissioner reminded me of the Soul Crushing Loss of the week honors. This week we shall award it to Rodney, who not only lost his matchup by 30 points, but also had Ben Roflcopter post 3 points before deciding he'd rather have season ending surgery than play for the Steelers this year.
+
+We now have access to the website so you can all look at your fancy sabremetrics and WARP and VORP and ZJARP (ZJs above replacement player) and such.
+
+https://tastad.net/tsfa
+
+Well then, get your lineups together before what looks to be another absolute barn burner on Thursday night between Tennessee and Jacksonville.
+
+Vaya con Dios
+
+***
+
+#### 3
+
+Good morning party people,
+
+We have made it through another week. This season is beginning to feel a little like the Trump news cycle, in which totally insane things happen on a daily basis that overshadow the other insane thing that happened the day before.
+
+Antonio Brown is apparently done playing football as he wasn't happy with the league's stance on his idea of work/life threatening balance.
+
+However, out of the darkness of one blonde mustache comes light. America's darling Gardner Minshew II has stolen the hearts of people everywhere with his 70s porno stache and his ability to chuck that pigskin. Will anyone have the balls to pick up GMII and hop on the mustache ride?
+
+Speaking of big dick energy, this week featured a few notable lap hogs but nobody measured up to this week's BSD Jack Doyle. Scoring 180 points against Chris Gervais made Jack the most Magnum dong of the week, which is an accomplishment because Gerv is no slouch when it comes to the beef.
+
+And starting this week, we have a new segment that I like to call Co-commissioner Chris's Corner of Shame (C4S). Take it away, Chris!
+
+Now for our favorite part of the week where we draw light to and bring shame on the individuals who are not effectively managing their lineups. This week we have:
+
+Daniel, Rodney
+
+That's the first strike for both. What's this about strikes? General Motors? No, Brady and I as co-league dictators have loosely discussed upholding an old policy I like to call "Marshal Law" in order to deal with roster insubordination. The parameters of this can be found at the link.
+
+https://tastad.net/tsfa/index.html#marshal-law
+
+Either way, how did we get here? Given that I assume Rod named his team after the Democratic Socialists of America, I can also imagine his misplaced understanding of democratic socialism led to his tepid participation. The government doesn't update your lineups even in the communist utopia bud. You have to pick your players up by their bootstraps yourself.
+
+Chang, no excuses from you.
+
+I didn't think we'd have to start this conversation at this point in the season, so let's all just make sure we take a Sunday morning dump, and set those lineups boys.
+
+Alright, bonus round: a seperate but just as important duty of FFB being neglected by those below is paying your dues. As now noted on our rankings table, we are missing payment from 2 contenders. So, be kind, rewind, and pay your fantasy dues.
+
+Gervais, Rodney (bro!)
+
+https://tastad.net/tsfa/rankings.html
+
+Thanks everyone! Set your lineups for Thursday's game. Keep fucking that chicken.
+
+***
+
+#### 4
+
+WELL! We are back folks, with another episode of FFB2K19 Recap Week 4 edition.
+
+To kick things off, I think it's appropriate that the Kool Aid Man share some words of wisdom with us.
+
+https://www.reddit.com/r/nfl/comments/dbfkjh/highlight_andy_reid_not_all_of_mozarts_paintings/?utm_medium=android_app&utm_source=share
+
+I feel it's a fitting metaphor, as we had some victories this week for people despite piss-poor individual performances from star players, but ultimately were able to grind it out. Now sell your team for millions of dollars.
+
+As we reach the quarter mark of the season, we're starting to see some of the wheat separate from the chaff. Darin and Josh P seem to be streaking towards the sun with undefeated records. Let's hope their wings don't melt come playoff time and they come plummeting back through the atmosphere. Their frail neckbeards can't handle those G Force levels.
+
+Unfortunately we also have a few teams who went full SpaceX on us and exploded in a ball of flames before even getting to the clouds. You know who you are.
+
+Speaking of Darin being a dick, he is this week's BSD, taking out yours truly after a hard fought battle. Congrats, Darin. If you win the league you can use the money to get that penis tattoo you've always talked about.
+
+This week we will be without the C4S as Chris has been working himself to the bone. Plus, it seems like the threat of martial law whipped everyone into shape. The only shameful mismanagement is of my team's tight ends.
+
+Lineups by Thursday night! Adios muchachos.
+
+***
+
+#### 5
+
+Hello my pretties,
+
+Welcome again to your FFB2K19 Recap. This week we start off by laying to rest our beloved Bomba Squad. The 2019 Twins were, yet again, swept by the goddamn Yankees in the ALDS. Proving that nice guys finish last, our boys will sit back and watch as the Yanks plow through us at the bar, spill a drink on us, and begin aggressively flirting with our girlfriend, before taking her back to our apartment. Let the cucking begin.
+
+On to pigskin news! Speaking of meltdowns, the league scoreboard looked like Chernobyl 2.0 for a few teams, as they were vaporized by their opponents who rained nuclear graphite touchdowns all over their asses. Condolences to Chang and Tastad, whose teams were completely degloved by myself and Danny respectively. Although, unlike Chang, Tastad is able to say he at least put up a fight with 130 points. Not great, not terrible.
+
+That brings us to this week's BSD. I was feeling confident that early projections would hold and add a few inches to my shockingly average endowment, but Danny unfurled his fire hose for over 200 points and blasted through the wall like the Kool Aid Man with no regard for human life. Congrats Danny. You'll have to show it to me this weekend when we visit.
+
+And by some gigantic fucking miracle, Baker Mayfield shit himself just when Darin needed him to, helping him reach a tie for a league-best 5-0, along with southern powerhouse Josh Perkins. The Cowboys may have blown it, but Josh has diversified his player portfolio enough to overcome Dak's short-armings.
+
+Darin, I confidently speak for all of us when I say you don't deserve it.
+
+And now, onto the C4S. Shame away, Chris!
+
+There comes a time in the career of every fantasy football commissioner where they find themselves feeding the evil they sought to root out. Lines blur, and the difference between right and wrong becomes corrupted as you try to let the ends justify the means. Well, in my attempts to co-lead you through the tempest of the fantasy football landscape, I have failed my own principles.
+
+Soo...now for our favorite part of the week where we draw light to and bring shame on the individuals who are not effectively managing their lineups. This week we have:
+
+Chris Tastad (strike one)
+
+In addition, I'd like to draw shame on two non-league members. First, Baker 'bake me a cake as fast as you can' Mayfield. What the hell are you doing, friend? You could have delivered a mediocre display and handed our halfling league mate, Darin, his first well-deserved loss. Real dissapointed bruv.
+
+Second, my own code deserves a call out. Looking at the rankings change, it seems as if my ELO went up while Danny's went down. That doesn't seem right for some reason... I'll need to take a another look at the model, but I think we can just assume everyone is unoffically tied for last place while the power rankings are under construction.
+
+Power rankings
+https://tastad.net/tsfa/rankings.html
+
+Thanks everyone! See you Thursday night for Giants/Patriots.
+
+***
+
+#### 6
+
+Hello ladies and gentlemen, I'm so glad you could grace me with your presence.
+
+Welcome to your Week 6 recap. It was a wild one this week, especially on the NFC side of things. The Cowboys continue to dangle the fate of their head coach in front of him like a carrot, seemingly deciding week by week whether they want him fired or not.
+
+And last night the Lions did their trademark Lions-ing and found a way to blow one at Lambeau, which the refs were happy to oblige. Even the cheesiest of heads have to feel like they got away with one there.
+
+And finally, as everyone totally expected, Kirk Cousins and the Vikings blew out the Eagles so bad that they almost immediately cut their linebacker who was talking shit and then spectacularly failed to do anything to back it up. To steal a joke from Twitter; Zack Brown Banned.
+
+In league news, this was actually one of our lower scoring weeks amidst two close games and three other blowouts.
+
+For the second time this season, Darin is our BSD. Not only that, but he is now the lone undefeated team in the league. I may have to convene with Co commissioner Chris to launch an investigation, as rumors have begun to fly about the ownership/use of a certain Swedish Penis Pump that was seen in the background of some of Darin's selfies that he has exchanged with various Eastern European Instagram models. Darin, if you'd like to submit 10-12 high gloss, closeup photos of your genitals to the League Office at ctastad@gmail.com that would be appreciated.
+
+Also this week we have a genuine Soul Crushing Loss. Daniel Chang and his Epstein Bears really choked (zing!) and posted a paltry 56.1 points against The Cheese Merkins... I mean Mustaches (probably interchangable in Wisconsin if we're being honest). This might be a lesson in draft strategy, as Dan had five of his players on the same bye week.
+
+This week we will be without the Corner of Shame, as Co commissioner Chris has real things to put his efforts into. Good luck Chris. Plus, Rodney paid up so everyone is in good standing with the league.
+
+Thanks for listening, everyone. Make sure your lineups are set if you have anyone playing on Thursday night!
+
+#### 7
+
+Guess who's back, back again? Brady's back with the FFB2K19 Recap.
+
+Well dudes, we're halfway through the season and what a ride it's been.
+
+We've experienced the highest of highs and the lowest of lows when it comes to points scored in the first half of the season; seeing a 200 point performance as well as barely breaking 50. The parity in our league is strong.
+
+It may seem hopeless for some, but you never know what can happen in the second half of the season. I've seen sicker dogs come back to life.
+
+But for fuuuuck sake will someone beat Darin? Jesus Christ.
+
+This week, Jack just beats him out by the tip for the BSD award with nearly 148 points. Well earned, Jack. We can at least celebrate the little victories.
+
+One matchup that may have flown under the radar for some this week was the Tastad Brother Bowl. Chris and Josh squared off over the right to be named Alpha Bro of the Tastad house, a position long held by Chris on a count of him having the torso of a marble cut statue and the legs of an NHL player that rides the Tour de France for fun, and the fact that I'm still not convinced Josh weighs more than 100 lbs.
+
+HOWEVA! Josh was able to earn a sneaky victory and ride off into the sunset flipping double birds to Chris as he lay in the gutter choking on Josh's dust. Yes, this conversation is different if Chris puts Marvin Jones Jr. in the lineup, but alas, he did not do that.
+
+To really stick a finger in the wound, Josh sent this message to Chris shortly after the victory, which makes it the Soul Crushing Loss of the Week:
+
+Guess who's back, back again? Brady's back with the FFB2K19 Recap.
+
+Well dudes, we're halfway through the season and what a ride it's been.
+
+We've experienced the highest of highs and the lowest of lows when it comes to points scored in the first half of the season; seeing a 200 point performance as well as barely breaking 50. The parity in our league is strong.
+
+It may seem hopeless for some, but you never know what can happen in the second half of the season. I've seen sicker dogs come back to life.
+
+But for fuuuuck sake will someone beat Darin? Jesus Christ.
+
+This week, Jack just beats him out by the tip for the BSD award with nearly 148 points. Well earned, Jack. We can at least celebrate the little victories.
+
+One matchup that may have flown under the radar for some this week was the Tastad Brother Bowl. Chris and Josh squared off over the right to be named Alpha Bro of the Tastad house, a position long held by Chris on a count of him having the torso of a marble cut statue and the legs of an NHL player that rides the Tour de France for fun, and the fact that I'm still not convinced Josh weighs more than 100 lbs.
+
+HOWEVA! Josh was able to earn a sneaky victory and ride off into the sunset flipping double birds to Chris as he lay in the gutter choking on Josh's dust. Yes, this conversation is different if Chris puts Marvin Jones Jr. in the lineup, but alas, he did not do that.
+
+To really stick a finger in the wound, Josh sent this message to Chris shortly after the victory, which makes it the Soul Crushing Loss of the Week:
+
+***
+
+#### 8
+
+Good afternoon my bitches and hoes,
+
+We've done it. We're officially over the hump of the season. Who doesn't love a good hump? As I write this, I feel like I don't have a lot to say this week, but I'm going to keep typing and see if inspiration strikes.
+
+I personally felt a little detached from the games this week. With the Vikings winning a snoozer on Thursday night, I kind of coasted through the rest of the weekend only tangentially aware of what was happening, both on and off the field. That could be because I was still hungover from a wedding I attended on Friday night. Some of you were there with me and maybe we even shared a dance, but fortunately I was alone in the hotel bathroom when I was throwing up the lovely dinner we had.
+
+Speaking of wanting to puke, it makes me sick to look at Darin's record. 8-0. Undefeated. Nary a loss to be found. At this point, I don't even know which way is up. If Darin were shown on the jumbotron at a World Series game, he would get more boos than President Sweet Potato. In the latest Gallup poll, 98% of voters favor Darin losing the rest of his games this season.
+
+Yet, you have to respect it. Good teams beat bad teams, and apparently we're all shit. Chris made the bold choice to promise a victory against Darin this week in a reply all message for everyone to see, cockily posturing to all of us about the beatdown he was about to present.
+
+Darin basically did this to him. RIP Chris.
+
+This week's BSD is Joshua "Tex" Perkins with 159.9 points. The Minnesota cold didn't cause any shrinkage, and he soundly shamed me in our head to head matchup. Josh is married to my sister, and I didn't feel good about typing any of that.
+
+I also feel like I need to shoutout Danny's Cheese Mustaches, as he mounted a large comeback to keep his winning streak alive at 4 straight games. Will his Wisconsin beer farts be enough to propel him to the level of Josh and Jack? Only time will tell.
+
+Well I think I've fully expelled my creative juices for this week, so I will leave you to tinker with your lineups before Thursday night's extra spooky Halloween night game.
+
+***
+
+#### 9
+
+Well well well,
+
+Good morning everyone. Thanks for tuning in to your FFB2K19 recap.
+
+Another week comes and goes in this NFL season. It seems like just yesterday we held our draft, and now we see ourselves over the hump of the regular season.
+
+It was an eventful weekend in the TFA. We had a couple close matches that came down to a few key players for teams. None more important the Josh Perkins' Cowboys defense. Let me set the scene.
+
+It's a chilly night in the Twin Cities. Light snow is falling, and the onset of daylight savings time has allowed darkness to descend on the metro. On one side of the river, in his East Downtown Minneapolis apartment, Chris Tastad overlooks the people walking down Washington Avenue, holding their coats tightly shut against their chests. He smirks as he imagines opening the window and peeing down onto the sidewalk. Not to hit anyone, but just because he's always wanted to try it. A Monday night football game softly blares in the background, as he anxiously watches the score of his matchup with Josh Perkins on his Palm Pilot as he prepares for a shift at UPS. "What can brown do for you?", Chris recites in his head, the mantra that has infected his every waking thought.
+
+Across town, on the gritty streets of Saint Paul, resident Dallas Cowboys fanatic Josh Perkins buries himself on the couch to watch his beloved power couple of Dak and Zeke take the field. He thinks to himself, "Dak and Zeke, that could be the name of a Disney channel show about two young rascals causing lighthearted trouble around their idyllic suburban neighborhood." He, too, smirks at the image. As Josh watches the game, his wife Taylor spends 3 uninterrupted hours plotting the destruction of his newly assembled 5,000 piece Lego Star Destroyer that takes up their entire dining room table.
+
+As the game wears on, Josh becomes aware of his need for some serious magic in order to overtake Chris. Nervously, Josh watches as the minutes go by. Dallas has begun to pull away from the Giants, but Josh draws ever closer to his goal. Soon, the end of the game is in sight. Josh checks the score of his matchup, and he sits just .1 point behind Chris. With Dallas on defense and no hope for the Giants of winning the game, things don't look good.
+
+His eyes are glued to the screen as Danny Dimes takes what will likely be the final snap of the game. With less than 20 second left, the Giants hope to salvage some of their pride, down 30-18, and escape with minimal casualties. The ball is snapped. Dallas brings pressure from the weak side. Josh sits up straight. Jones brings his arm back to pass. The Cowboys defense is right there! As he prepares to throw, a Dallas defender knocks the ball loose! Josh sees glimmer of hope in the form of a fumble recovery...but it appears that a Giants lineman pounces on the ball and the glimmer fades. But not a moment later, the bulbous, flubber-like mass of the linemen's stomach allows the ball to squirt out towards the sideline. Out of the corner of the screen, Josh's hopes and dreams re-appear, wearing stars on his helmet and number 27 on his back. Jourdan Julian Lewis sprints to the bouncing ball, which pops up into his arms in stride. Josh screams, the frequency of which shatters the Star Destroyer in a scene reminiscent of the mighty Rebel Alliance attack, but he pays no mind as he watches Lewis stroll into the end zone to twist the knife already deep in the Giants belly. In the blink of an eye, Josh has conquered Chris. Taylor sleeps soundly.
+
+Josh settles back onto the couch, a satisfied look on his face, checking the score one more time. That was it. Exactly what he needed at exactly the right time. Because this is America's Team, he thinks.
+
+Across the river, Chris, unable to keep up with the game at work, gets a sudden sharp pain in his stomach. It comes on in a rush and not even the most expert clench can defend it. He looks up towards the heavens, raises his arms in an apathetic shrug, and silently shits himself on the warehouse floor, another part of his soul irreparably crushed.
+
+"What can brown do for you?", he thinks.
+
+Fin.
+
+Okay, where was I? I think I blacked out. Anyways, Goddamn Darin was back at it again, winning his 9th straight. At this point he's gotta be begging for someone to beat him so he at least gets that monkey off of his back before the playoffs. Inching ever closer to the sun, Darin. Better bring some heavy SPF.
+
+This week's BSD is our friend Chris Gervais with 143 points. This is fitting, because I once saw a picture of his flaccid penis bent at a right angle mid-shaft. That's some serious acreage if you ask me.
+
+In the-opposite-of-scoring-many-points news, Co commissioner Chris and I will be enacting Martial Law on the DSA Rammers. This is the third strike this season for Rodney, who has failed to adequately manage his team. If there is no lineup movement on the team by Thursday morning, we reserve the right to build a suitable starting lineup for you.
+
+Rawdog, I know you have a lot going on, so I don't want to bring shame on you too heavy, but we need to see some piss and vinegar from you! Anything can happen in the playoffs, mi amigo.
+
+Alright I think you've read my incoherent ramblings for long enough. Set your lineups and get ready for some WEEK 10 FOOTBAW!
+
+***
+
+#### 10
+
+Oftentimes, in the wake of truly life changing events, there are tangible effects that are felt by those who are not directly involved.
+
+The sun shines a little brighter. The air has a crisp, fresh feel to it. Birds are singing louder. 9 out of our 10 league members experienced simultaneous erections in the middle of the night, while the 10th wept in the corner of a cold shower, drinking direct from a gallon jug filled with Stolichnaya Vodka.
+
+What caused this overnight phenomenon? Well boys, I appear before you, an angel of the league, to give you good news of great joy. Darin has taken his first loss of the season. Our boy Danny the Cheeser successfully and authoritatively YEETED the fuck out of Darin.
+
+Here we see a text that Danny received shortly after his victory.
+
+But I would be remiss if I didn't congratulate Darin on an incredible run. Good teams find ways to win even when their stars don't produce, and that's exactly what his squad did. We'll remember you forever, Darin. RIP.
+
+You might think that Darin suffering his first loss of the season would be this week's Soul Crusher. You think wrong. Darin's confidence took a minor dent, but nothing that can't be buffed out.
+
+No. Chris Tastad, on the other hand. That's a different story. He was so close to pulling an upset on Jack that he could almost feel it. This is now at least the third time that one of Chris's benched players could have secured a win had he only seen the light of day. I'm not sure if there is much soul left to crush, but a 1 point loss to our liberal left coast elitist Jack may have done it. Minneapolis residents, I ask that you keep an eye out for any suspiciously haggard and drunk downtown residents wandering aimlessly through the streets muttering curses under his breath. Please stay on the sidewalk, Chris. For your safety.
+
+In happier news, I'm proud to present this week's BSD award to Danny. Hailing from Wisconsin, he's all too familiar with sausage, and this week he brought the extra long kielbasa. I'm thinking at the end of the season, I'll tally up everyone's BSD awards and crown a champion who most frequently owned the BSD throughout the season.
+
+On another note, I don't want to take full credit, but since taking over Rodney's DSA Rammers, I was two points away from securing his first victory of the season. Maybe next week.
+
+Alright boys, as always, thanks for reading and remember to set your lineups.
+
+***
+
+### Administrative BS {.tabset .tabset-fade}
+
+#### Martial Law
+
+##### Owners in Detention
+
+* Rodney (3 strikes - active)
+* Daniel (1 strike)
+* Chris Tastad (1 strike)
+
+1. If a team manager is found not updating their lineup for three weeks over the course of the season the commissioner will reserve the right to intervene and make unilateral adjustments to the team in question.
+
+2. The goal of these adjustments will not go beyond strictly filling the open gaps in the roster for the given week.
+
+3. Objectivity will be maintained in making adjustments by exclusively following ESPN projected point values. As little intervention as possible will be a priority in achieving the goal of delivering a complete lineup.
+
+4. As much time as possible will be given to the team manager to make adjustments, and any interventions will occur at a "last possible moment".
+
+#### Playoff Berths
+
+TBD
+
+#### Tie Breaking
+
+1. Record
+2. Win Differential
+3. Points For
+4. Strength of Schedule
+5. Coin Toss
+
+

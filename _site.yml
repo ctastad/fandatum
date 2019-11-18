@@ -1,0 +1,10 @@
+name: "Tri-State Football Alliance"
+navbar:
+    title: "Tri-State Football Alliance"
+    left:
+        - text: "Home"
+          href: index.html
+        - text: "Rankings"
+          href: rankings.html
+        - text: "Data"
+          href: data.html

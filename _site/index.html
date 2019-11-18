@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title> Clubhouse</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/paper.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link rel="shortcut icon" href="favicon.ico">
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 64px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h2 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h3 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h4 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h5 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h6 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Tri-State Football Alliance</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="rankings.html">Rankings</a>
+</li>
+<li>
+  <a href="data.html">Data</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore"><img src="g1397.svg" /> Clubhouse</h1>
+
+</div>
+
+
+<hr />
+<div id="message" class="section level3 tabset tabset-fade">
+<h3>Message</h3>
+<div id="section" class="section level4">
+<h4>*</h4>
+<p>Hello lovers, friends, family, and step-mom porn addicts (looking at you, Darin).</p>
+<p>Welcome to FFB2K19. I have personally selected each of you based on an exclusive set of criteria which shall not be fully disclosed but may or may not have strictly to do with your willingness to participate.</p>
+<p>I’m exited for the season and you’re all welcome for not hosting a draft before Andrew Luck decided he was going to take his neckbeard off the roster forever.</p>
+<p>We will be using ESPN fantasy sports. You can access the league here</p>
+<p><a href="https://fantasy.espn.com/football/league/join?leagueId=28124948&amp;inviteId=dda88878-ca45-4603-8661-4891300c0001" class="uri">https://fantasy.espn.com/football/league/join?leagueId=28124948&amp;inviteId=dda88878-ca45-4603-8661-4891300c0001</a></p>
+<p>My co commissioner Chris Tastad will be running a website that features analytics and graphs and shit. I don’t remember that link.</p>
+<p>Now onto the important part - the draft. The ESPN app/website has a draft lobby that we can all enter when the time comes. If you are not able to draft your team personally, auto draft will select the best available players for you.</p>
+<p>I’m thinking that we should shoot for a draft on the evening of Monday September 2 at 7 pm, but if that doesn’t work for people we could do some other night that week.</p>
+<p>Please let me know if that does or doesn’t work for you and we can figure out an alternative if needed.</p>
+<p>I look forward to enjoying this football season with all of you.</p>
+<p>Brady</p>
+<hr />
+</div>
+<div id="week-1" class="section level4">
+<h4>Week 1</h4>
+<p>Good morning boys,</p>
+<p>Week 1 is in the bag, and based on the 80 point performance of the Cheese Mustaches I’m guessing Danny might be as well, the damn drunken Sconnie. Living in Chicago can only mask so much of your natural born ways!</p>
+<p>It was a pretty good opening weekend as we saw some big scores but also some very low scores, and lots and lots of penalty flags.</p>
+<p>As with every week, some diamonds were left in the rough of a few team’s bench which is a shame because Jack would have soundly fisted Darin had Austin Ekeler seen the light of day.</p>
+<p>New this year I’ll be awarding the Big Swinging Dick (BSD) award to the highest point scorer of each week. This week it goes to yours truly, beating young Chris Gervais by the skin of my fore.</p>
+<p>But it’s a new week, and the lowly Bucs square off with the Panthers on Thursday night, so make sure to get a new QB if you have James on your roster unless you also have Carolina’s D.</p>
+<p>Once Tastad has the website up and running I’m sure he’ll send over the link.</p>
+<p>Cheers dudes.</p>
+<hr />
+</div>
+<div id="section-1" class="section level4">
+<h4>2</h4>
+<p>Good evening y’all,</p>
+<p>Time for your weekly FFB2K19 report.</p>
+<p>It seems that the NFL is now a reality TV drama - if you decide you don’t want to play for your busted-ass team you can throw a toddler level tantrum about a helmet and get cut or just tell your agent you want to get traded so that all your teammates know you’re over them. In both cases you probably wind up on the Patriots.</p>
+<p>In league news, we didn’t have many compelling matchups, aside from the Chris Tastad and Jack Doyle matchup. The winners cruised comfortably to victories on good performances by many. The losers were banished quickly to the gutters as reliable players decided to loaf it.</p>
+<p>This week’s BSD is Josh Perkins, as his squad delivered an inspired performance in honor of the late T Boone Pickens. The award seems appropriate seeing as that name has unlimited porn-ification potential.</p>
+<p>In addition to the BSD award, my co commissioner reminded me of the Soul Crushing Loss of the week honors. This week we shall award it to Rodney, who not only lost his matchup by 30 points, but also had Ben Roflcopter post 3 points before deciding he’d rather have season ending surgery than play for the Steelers this year.</p>
+<p>We now have access to the website so you can all look at your fancy sabremetrics and WARP and VORP and ZJARP (ZJs above replacement player) and such.</p>
+<p><a href="https://tastad.net/tsfa" class="uri">https://tastad.net/tsfa</a></p>
+<p>Well then, get your lineups together before what looks to be another absolute barn burner on Thursday night between Tennessee and Jacksonville.</p>
+<p>Vaya con Dios</p>
+<hr />
+</div>
+<div id="section-2" class="section level4">
+<h4>3</h4>
+<p>Good morning party people,</p>
+<p>We have made it through another week. This season is beginning to feel a little like the Trump news cycle, in which totally insane things happen on a daily basis that overshadow the other insane thing that happened the day before.</p>
+<p>Antonio Brown is apparently done playing football as he wasn’t happy with the league’s stance on his idea of work/life threatening balance.</p>
+<p>However, out of the darkness of one blonde mustache comes light. America’s darling Gardner Minshew II has stolen the hearts of people everywhere with his 70s porno stache and his ability to chuck that pigskin. Will anyone have the balls to pick up GMII and hop on the mustache ride?</p>
+<p>Speaking of big dick energy, this week featured a few notable lap hogs but nobody measured up to this week’s BSD Jack Doyle. Scoring 180 points against Chris Gervais made Jack the most Magnum dong of the week, which is an accomplishment because Gerv is no slouch when it comes to the beef.</p>
+<p>And starting this week, we have a new segment that I like to call Co-commissioner Chris’s Corner of Shame (C4S). Take it away, Chris!</p>
+<p>Now for our favorite part of the week where we draw light to and bring shame on the individuals who are not effectively managing their lineups. This week we have:</p>
+<p>Daniel, Rodney</p>
+<p>That’s the first strike for both. What’s this about strikes? General Motors? No, Brady and I as co-league dictators have loosely discussed upholding an old policy I like to call “Marshal Law” in order to deal with roster insubordination. The parameters of this can be found at the link.</p>
+<p><a href="https://tastad.net/tsfa/index.html#marshal-law" class="uri">https://tastad.net/tsfa/index.html#marshal-law</a></p>
+<p>Either way, how did we get here? Given that I assume Rod named his team after the Democratic Socialists of America, I can also imagine his misplaced understanding of democratic socialism led to his tepid participation. The government doesn’t update your lineups even in the communist utopia bud. You have to pick your players up by their bootstraps yourself.</p>
+<p>Chang, no excuses from you.</p>
+<p>I didn’t think we’d have to start this conversation at this point in the season, so let’s all just make sure we take a Sunday morning dump, and set those lineups boys.</p>
+<p>Alright, bonus round: a seperate but just as important duty of FFB being neglected by those below is paying your dues. As now noted on our rankings table, we are missing payment from 2 contenders. So, be kind, rewind, and pay your fantasy dues.</p>
+<p>Gervais, Rodney (bro!)</p>
+<p><a href="https://tastad.net/tsfa/rankings.html" class="uri">https://tastad.net/tsfa/rankings.html</a></p>
+<p>Thanks everyone! Set your lineups for Thursday’s game. Keep fucking that chicken.</p>
+<hr />
+</div>
+<div id="section-3" class="section level4">
+<h4>4</h4>
+<p>WELL! We are back folks, with another episode of FFB2K19 Recap Week 4 edition.</p>
+<p>To kick things off, I think it’s appropriate that the Kool Aid Man share some words of wisdom with us.</p>
+<p><a href="https://www.reddit.com/r/nfl/comments/dbfkjh/highlight_andy_reid_not_all_of_mozarts_paintings/?utm_medium=android_app&amp;utm_source=share" class="uri">https://www.reddit.com/r/nfl/comments/dbfkjh/highlight_andy_reid_not_all_of_mozarts_paintings/?utm_medium=android_app&amp;utm_source=share</a></p>
+<p>I feel it’s a fitting metaphor, as we had some victories this week for people despite piss-poor individual performances from star players, but ultimately were able to grind it out. Now sell your team for millions of dollars.</p>
+<p>As we reach the quarter mark of the season, we’re starting to see some of the wheat separate from the chaff. Darin and Josh P seem to be streaking towards the sun with undefeated records. Let’s hope their wings don’t melt come playoff time and they come plummeting back through the atmosphere. Their frail neckbeards can’t handle those G Force levels.</p>
+<p>Unfortunately we also have a few teams who went full SpaceX on us and exploded in a ball of flames before even getting to the clouds. You know who you are.</p>
+<p>Speaking of Darin being a dick, he is this week’s BSD, taking out yours truly after a hard fought battle. Congrats, Darin. If you win the league you can use the money to get that penis tattoo you’ve always talked about.</p>
+<p>This week we will be without the C4S as Chris has been working himself to the bone. Plus, it seems like the threat of martial law whipped everyone into shape. The only shameful mismanagement is of my team’s tight ends.</p>
+<p>Lineups by Thursday night! Adios muchachos.</p>
+<hr />
+</div>
+<div id="section-4" class="section level4">
+<h4>5</h4>
+<p>Hello my pretties,</p>
+<p>Welcome again to your FFB2K19 Recap. This week we start off by laying to rest our beloved Bomba Squad. The 2019 Twins were, yet again, swept by the goddamn Yankees in the ALDS. Proving that nice guys finish last, our boys will sit back and watch as the Yanks plow through us at the bar, spill a drink on us, and begin aggressively flirting with our girlfriend, before taking her back to our apartment. Let the cucking begin.</p>
+<p>On to pigskin news! Speaking of meltdowns, the league scoreboard looked like Chernobyl 2.0 for a few teams, as they were vaporized by their opponents who rained nuclear graphite touchdowns all over their asses. Condolences to Chang and Tastad, whose teams were completely degloved by myself and Danny respectively. Although, unlike Chang, Tastad is able to say he at least put up a fight with 130 points. Not great, not terrible.</p>
+<p>That brings us to this week’s BSD. I was feeling confident that early projections would hold and add a few inches to my shockingly average endowment, but Danny unfurled his fire hose for over 200 points and blasted through the wall like the Kool Aid Man with no regard for human life. Congrats Danny. You’ll have to show it to me this weekend when we visit.</p>
+<p>And by some gigantic fucking miracle, Baker Mayfield shit himself just when Darin needed him to, helping him reach a tie for a league-best 5-0, along with southern powerhouse Josh Perkins. The Cowboys may have blown it, but Josh has diversified his player portfolio enough to overcome Dak’s short-armings.</p>
+<p>Darin, I confidently speak for all of us when I say you don’t deserve it.</p>
+<p>And now, onto the C4S. Shame away, Chris!</p>
+<p>There comes a time in the career of every fantasy football commissioner where they find themselves feeding the evil they sought to root out. Lines blur, and the difference between right and wrong becomes corrupted as you try to let the ends justify the means. Well, in my attempts to co-lead you through the tempest of the fantasy football landscape, I have failed my own principles.</p>
+<p>Soo…now for our favorite part of the week where we draw light to and bring shame on the individuals who are not effectively managing their lineups. This week we have:</p>
+<p>Chris Tastad (strike one)</p>
+<p>In addition, I’d like to draw shame on two non-league members. First, Baker ‘bake me a cake as fast as you can’ Mayfield. What the hell are you doing, friend? You could have delivered a mediocre display and handed our halfling league mate, Darin, his first well-deserved loss. Real dissapointed bruv.</p>
+<p>Second, my own code deserves a call out. Looking at the rankings change, it seems as if my ELO went up while Danny’s went down. That doesn’t seem right for some reason… I’ll need to take a another look at the model, but I think we can just assume everyone is unoffically tied for last place while the power rankings are under construction.</p>
+<p>Power rankings <a href="https://tastad.net/tsfa/rankings.html" class="uri">https://tastad.net/tsfa/rankings.html</a></p>
+<p>Thanks everyone! See you Thursday night for Giants/Patriots.</p>
+<hr />
+</div>
+<div id="section-5" class="section level4">
+<h4>6</h4>
+<p>Hello ladies and gentlemen, I’m so glad you could grace me with your presence.</p>
+<p>Welcome to your Week 6 recap. It was a wild one this week, especially on the NFC side of things. The Cowboys continue to dangle the fate of their head coach in front of him like a carrot, seemingly deciding week by week whether they want him fired or not.</p>
+<p>And last night the Lions did their trademark Lions-ing and found a way to blow one at Lambeau, which the refs were happy to oblige. Even the cheesiest of heads have to feel like they got away with one there.</p>
+<p>And finally, as everyone totally expected, Kirk Cousins and the Vikings blew out the Eagles so bad that they almost immediately cut their linebacker who was talking shit and then spectacularly failed to do anything to back it up. To steal a joke from Twitter; Zack Brown Banned.</p>
+<p>In league news, this was actually one of our lower scoring weeks amidst two close games and three other blowouts.</p>
+<p>For the second time this season, Darin is our BSD. Not only that, but he is now the lone undefeated team in the league. I may have to convene with Co commissioner Chris to launch an investigation, as rumors have begun to fly about the ownership/use of a certain Swedish Penis Pump that was seen in the background of some of Darin’s selfies that he has exchanged with various Eastern European Instagram models. Darin, if you’d like to submit 10-12 high gloss, closeup photos of your genitals to the League Office at <a href="mailto:ctastad@gmail.com">ctastad@gmail.com</a> that would be appreciated.</p>
+<p>Also this week we have a genuine Soul Crushing Loss. Daniel Chang and his Epstein Bears really choked (zing!) and posted a paltry 56.1 points against The Cheese Merkins… I mean Mustaches (probably interchangable in Wisconsin if we’re being honest). This might be a lesson in draft strategy, as Dan had five of his players on the same bye week.</p>
+<p>This week we will be without the Corner of Shame, as Co commissioner Chris has real things to put his efforts into. Good luck Chris. Plus, Rodney paid up so everyone is in good standing with the league.</p>
+<p>Thanks for listening, everyone. Make sure your lineups are set if you have anyone playing on Thursday night!</p>
+</div>
+<div id="section-6" class="section level4">
+<h4>7</h4>
+<p>Guess who’s back, back again? Brady’s back with the FFB2K19 Recap.</p>
+<p>Well dudes, we’re halfway through the season and what a ride it’s been.</p>
+<p>We’ve experienced the highest of highs and the lowest of lows when it comes to points scored in the first half of the season; seeing a 200 point performance as well as barely breaking 50. The parity in our league is strong.</p>
+<p>It may seem hopeless for some, but you never know what can happen in the second half of the season. I’ve seen sicker dogs come back to life.</p>
+<p>But for fuuuuck sake will someone beat Darin? Jesus Christ.</p>
+<p>This week, Jack just beats him out by the tip for the BSD award with nearly 148 points. Well earned, Jack. We can at least celebrate the little victories.</p>
+<p>One matchup that may have flown under the radar for some this week was the Tastad Brother Bowl. Chris and Josh squared off over the right to be named Alpha Bro of the Tastad house, a position long held by Chris on a count of him having the torso of a marble cut statue and the legs of an NHL player that rides the Tour de France for fun, and the fact that I’m still not convinced Josh weighs more than 100 lbs.</p>
+<p>HOWEVA! Josh was able to earn a sneaky victory and ride off into the sunset flipping double birds to Chris as he lay in the gutter choking on Josh’s dust. Yes, this conversation is different if Chris puts Marvin Jones Jr. in the lineup, but alas, he did not do that.</p>
+<p>To really stick a finger in the wound, Josh sent this message to Chris shortly after the victory, which makes it the Soul Crushing Loss of the Week:</p>
+<p>Guess who’s back, back again? Brady’s back with the FFB2K19 Recap.</p>
+<p>Well dudes, we’re halfway through the season and what a ride it’s been.</p>
+<p>We’ve experienced the highest of highs and the lowest of lows when it comes to points scored in the first half of the season; seeing a 200 point performance as well as barely breaking 50. The parity in our league is strong.</p>
+<p>It may seem hopeless for some, but you never know what can happen in the second half of the season. I’ve seen sicker dogs come back to life.</p>
+<p>But for fuuuuck sake will someone beat Darin? Jesus Christ.</p>
+<p>This week, Jack just beats him out by the tip for the BSD award with nearly 148 points. Well earned, Jack. We can at least celebrate the little victories.</p>
+<p>One matchup that may have flown under the radar for some this week was the Tastad Brother Bowl. Chris and Josh squared off over the right to be named Alpha Bro of the Tastad house, a position long held by Chris on a count of him having the torso of a marble cut statue and the legs of an NHL player that rides the Tour de France for fun, and the fact that I’m still not convinced Josh weighs more than 100 lbs.</p>
+<p>HOWEVA! Josh was able to earn a sneaky victory and ride off into the sunset flipping double birds to Chris as he lay in the gutter choking on Josh’s dust. Yes, this conversation is different if Chris puts Marvin Jones Jr. in the lineup, but alas, he did not do that.</p>
+<p>To really stick a finger in the wound, Josh sent this message to Chris shortly after the victory, which makes it the Soul Crushing Loss of the Week:</p>
+<hr />
+</div>
+<div id="section-7" class="section level4">
+<h4>8</h4>
+<p>Good afternoon my bitches and hoes,</p>
+<p>We’ve done it. We’re officially over the hump of the season. Who doesn’t love a good hump? As I write this, I feel like I don’t have a lot to say this week, but I’m going to keep typing and see if inspiration strikes.</p>
+<p>I personally felt a little detached from the games this week. With the Vikings winning a snoozer on Thursday night, I kind of coasted through the rest of the weekend only tangentially aware of what was happening, both on and off the field. That could be because I was still hungover from a wedding I attended on Friday night. Some of you were there with me and maybe we even shared a dance, but fortunately I was alone in the hotel bathroom when I was throwing up the lovely dinner we had.</p>
+<p>Speaking of wanting to puke, it makes me sick to look at Darin’s record. 8-0. Undefeated. Nary a loss to be found. At this point, I don’t even know which way is up. If Darin were shown on the jumbotron at a World Series game, he would get more boos than President Sweet Potato. In the latest Gallup poll, 98% of voters favor Darin losing the rest of his games this season.</p>
+<p>Yet, you have to respect it. Good teams beat bad teams, and apparently we’re all shit. Chris made the bold choice to promise a victory against Darin this week in a reply all message for everyone to see, cockily posturing to all of us about the beatdown he was about to present.</p>
+<p>Darin basically did this to him. RIP Chris.</p>
+<p>This week’s BSD is Joshua “Tex” Perkins with 159.9 points. The Minnesota cold didn’t cause any shrinkage, and he soundly shamed me in our head to head matchup. Josh is married to my sister, and I didn’t feel good about typing any of that.</p>
+<p>I also feel like I need to shoutout Danny’s Cheese Mustaches, as he mounted a large comeback to keep his winning streak alive at 4 straight games. Will his Wisconsin beer farts be enough to propel him to the level of Josh and Jack? Only time will tell.</p>
+<p>Well I think I’ve fully expelled my creative juices for this week, so I will leave you to tinker with your lineups before Thursday night’s extra spooky Halloween night game.</p>
+<hr />
+</div>
+<div id="section-8" class="section level4">
+<h4>9</h4>
+<p>Well well well,</p>
+<p>Good morning everyone. Thanks for tuning in to your FFB2K19 recap.</p>
+<p>Another week comes and goes in this NFL season. It seems like just yesterday we held our draft, and now we see ourselves over the hump of the regular season.</p>
+<p>It was an eventful weekend in the TFA. We had a couple close matches that came down to a few key players for teams. None more important the Josh Perkins’ Cowboys defense. Let me set the scene.</p>
+<p>It’s a chilly night in the Twin Cities. Light snow is falling, and the onset of daylight savings time has allowed darkness to descend on the metro. On one side of the river, in his East Downtown Minneapolis apartment, Chris Tastad overlooks the people walking down Washington Avenue, holding their coats tightly shut against their chests. He smirks as he imagines opening the window and peeing down onto the sidewalk. Not to hit anyone, but just because he’s always wanted to try it. A Monday night football game softly blares in the background, as he anxiously watches the score of his matchup with Josh Perkins on his Palm Pilot as he prepares for a shift at UPS. “What can brown do for you?”, Chris recites in his head, the mantra that has infected his every waking thought.</p>
+<p>Across town, on the gritty streets of Saint Paul, resident Dallas Cowboys fanatic Josh Perkins buries himself on the couch to watch his beloved power couple of Dak and Zeke take the field. He thinks to himself, “Dak and Zeke, that could be the name of a Disney channel show about two young rascals causing lighthearted trouble around their idyllic suburban neighborhood.” He, too, smirks at the image. As Josh watches the game, his wife Taylor spends 3 uninterrupted hours plotting the destruction of his newly assembled 5,000 piece Lego Star Destroyer that takes up their entire dining room table.</p>
+<p>As the game wears on, Josh becomes aware of his need for some serious magic in order to overtake Chris. Nervously, Josh watches as the minutes go by. Dallas has begun to pull away from the Giants, but Josh draws ever closer to his goal. Soon, the end of the game is in sight. Josh checks the score of his matchup, and he sits just .1 point behind Chris. With Dallas on defense and no hope for the Giants of winning the game, things don’t look good.</p>
+<p>His eyes are glued to the screen as Danny Dimes takes what will likely be the final snap of the game. With less than 20 second left, the Giants hope to salvage some of their pride, down 30-18, and escape with minimal casualties. The ball is snapped. Dallas brings pressure from the weak side. Josh sits up straight. Jones brings his arm back to pass. The Cowboys defense is right there! As he prepares to throw, a Dallas defender knocks the ball loose! Josh sees glimmer of hope in the form of a fumble recovery…but it appears that a Giants lineman pounces on the ball and the glimmer fades. But not a moment later, the bulbous, flubber-like mass of the linemen’s stomach allows the ball to squirt out towards the sideline. Out of the corner of the screen, Josh’s hopes and dreams re-appear, wearing stars on his helmet and number 27 on his back. Jourdan Julian Lewis sprints to the bouncing ball, which pops up into his arms in stride. Josh screams, the frequency of which shatters the Star Destroyer in a scene reminiscent of the mighty Rebel Alliance attack, but he pays no mind as he watches Lewis stroll into the end zone to twist the knife already deep in the Giants belly. In the blink of an eye, Josh has conquered Chris. Taylor sleeps soundly.</p>
+<p>Josh settles back onto the couch, a satisfied look on his face, checking the score one more time. That was it. Exactly what he needed at exactly the right time. Because this is America’s Team, he thinks.</p>
+<p>Across the river, Chris, unable to keep up with the game at work, gets a sudden sharp pain in his stomach. It comes on in a rush and not even the most expert clench can defend it. He looks up towards the heavens, raises his arms in an apathetic shrug, and silently shits himself on the warehouse floor, another part of his soul irreparably crushed.</p>
+<p>“What can brown do for you?”, he thinks.</p>
+<p>Fin.</p>
+<p>Okay, where was I? I think I blacked out. Anyways, Goddamn Darin was back at it again, winning his 9th straight. At this point he’s gotta be begging for someone to beat him so he at least gets that monkey off of his back before the playoffs. Inching ever closer to the sun, Darin. Better bring some heavy SPF.</p>
+<p>This week’s BSD is our friend Chris Gervais with 143 points. This is fitting, because I once saw a picture of his flaccid penis bent at a right angle mid-shaft. That’s some serious acreage if you ask me.</p>
+<p>In the-opposite-of-scoring-many-points news, Co commissioner Chris and I will be enacting Martial Law on the DSA Rammers. This is the third strike this season for Rodney, who has failed to adequately manage his team. If there is no lineup movement on the team by Thursday morning, we reserve the right to build a suitable starting lineup for you.</p>
+<p>Rawdog, I know you have a lot going on, so I don’t want to bring shame on you too heavy, but we need to see some piss and vinegar from you! Anything can happen in the playoffs, mi amigo.</p>
+<p>Alright I think you’ve read my incoherent ramblings for long enough. Set your lineups and get ready for some WEEK 10 FOOTBAW!</p>
+<hr />
+</div>
+<div id="section-9" class="section level4">
+<h4>10</h4>
+<p>Oftentimes, in the wake of truly life changing events, there are tangible effects that are felt by those who are not directly involved.</p>
+<p>The sun shines a little brighter. The air has a crisp, fresh feel to it. Birds are singing louder. 9 out of our 10 league members experienced simultaneous erections in the middle of the night, while the 10th wept in the corner of a cold shower, drinking direct from a gallon jug filled with Stolichnaya Vodka.</p>
+<p>What caused this overnight phenomenon? Well boys, I appear before you, an angel of the league, to give you good news of great joy. Darin has taken his first loss of the season. Our boy Danny the Cheeser successfully and authoritatively YEETED the fuck out of Darin.</p>
+<p>Here we see a text that Danny received shortly after his victory.</p>
+<p>But I would be remiss if I didn’t congratulate Darin on an incredible run. Good teams find ways to win even when their stars don’t produce, and that’s exactly what his squad did. We’ll remember you forever, Darin. RIP.</p>
+<p>You might think that Darin suffering his first loss of the season would be this week’s Soul Crusher. You think wrong. Darin’s confidence took a minor dent, but nothing that can’t be buffed out.</p>
+<p>No. Chris Tastad, on the other hand. That’s a different story. He was so close to pulling an upset on Jack that he could almost feel it. This is now at least the third time that one of Chris’s benched players could have secured a win had he only seen the light of day. I’m not sure if there is much soul left to crush, but a 1 point loss to our liberal left coast elitist Jack may have done it. Minneapolis residents, I ask that you keep an eye out for any suspiciously haggard and drunk downtown residents wandering aimlessly through the streets muttering curses under his breath. Please stay on the sidewalk, Chris. For your safety.</p>
+<p>In happier news, I’m proud to present this week’s BSD award to Danny. Hailing from Wisconsin, he’s all too familiar with sausage, and this week he brought the extra long kielbasa. I’m thinking at the end of the season, I’ll tally up everyone’s BSD awards and crown a champion who most frequently owned the BSD throughout the season.</p>
+<p>On another note, I don’t want to take full credit, but since taking over Rodney’s DSA Rammers, I was two points away from securing his first victory of the season. Maybe next week.</p>
+<p>Alright boys, as always, thanks for reading and remember to set your lineups.</p>
+<hr />
+</div>
+</div>
+<div id="administrative-bs" class="section level3 tabset tabset-fade">
+<h3>Administrative BS</h3>
+<div id="martial-law" class="section level4">
+<h4>Martial Law</h4>
+<div id="owners-in-detention" class="section level5">
+<h5>Owners in Detention</h5>
+<ul>
+<li>Rodney (3 strikes - active)</li>
+<li>Daniel (1 strike)</li>
+<li>Chris Tastad (1 strike)</li>
+</ul>
+<ol style="list-style-type: decimal">
+<li><p>If a team manager is found not updating their lineup for three weeks over the course of the season the commissioner will reserve the right to intervene and make unilateral adjustments to the team in question.</p></li>
+<li><p>The goal of these adjustments will not go beyond strictly filling the open gaps in the roster for the given week.</p></li>
+<li><p>Objectivity will be maintained in making adjustments by exclusively following ESPN projected point values. As little intervention as possible will be a priority in achieving the goal of delivering a complete lineup.</p></li>
+<li><p>As much time as possible will be given to the team manager to make adjustments, and any interventions will occur at a “last possible moment”.</p></li>
+</ol>
+</div>
+</div>
+<div id="playoff-berths" class="section level4">
+<h4>Playoff Berths</h4>
+<p>TBD</p>
+</div>
+<div id="tie-breaking" class="section level4">
+<h4>Tie Breaking</h4>
+<ol style="list-style-type: decimal">
+<li>Record</li>
+<li>Win Differential</li>
+<li>Points For</li>
+<li>Strength of Schedule</li>
+<li>Coin Toss</li>
+</ol>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

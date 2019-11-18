@@ -1,0 +1,230 @@
+---
+title: "![](g1397.svg) Graphs"
+output:
+  html_document:
+    includes:
+        in_header: "favicon.html"
+    code_folding: hide
+    theme: paper
+---
+
+***
+
+```{r echo=FALSE, message=FALSE}
+# Import datafile with scraped content
+load("standings.Rdata")
+
+# Dependencies
+
+# install.packages("rmarkdown", type = "source")
+library(rmarkdown)
+library(knitr)
+# library(rvest)
+library(ggplot2)
+library(viridis)
+library(tidyverse)
+# library(reshape2)
+# library(scales)
+# library(RColorBrewer)
+# library(taRifx)
+library(ggrepel)
+# library(directlabels)
+# library(DT)
+library(grid)
+# library(PlayerRatings)
+# library(formattable)
+knitr::opts_chunk$set(comment = "", message = FALSE, warning = FALSE)
+
+```
+
+### {.tabset .tabset-fade}
+
+#### Pts by Team {.tabset .tabset-fade}
+
+Visualize your team's performance on the year. Fantasy football has no true head-to-head conflating factors, so sheer point value is actually a very clear cut way to assess a team. As we know, things don't always work out this way, but total points holds a disproportionate weight. An added bonus I've thrown in there is the average performance line, so we can know who's above the cut and who's below.
+
+##### PF
+
+```{r}
+ggplot(standings, aes(name, pointsFor)) +
+  geom_hline(aes(yintercept = mean(standings$pointsFor), linetype = "mean"), show.legend = TRUE) +
+  geom_bar(stat = "identity", aes(fill = divisionId)) +
+  geom_text(aes(label = pointsFor), hjust = 1.2, color = "white", size = 5) +
+  geom_text(aes(0, mean(standings$pointsFor), label = round(mean(standings$pointsFor), 2), vjust = -0.3, hjust = -0.1)) +
+  coord_flip() +
+  labs(title = "Total Points For by Team", y = "Points") +
+  theme(axis.title.y = element_blank())
+```
+
+##### PA
+
+```{r}
+ggplot(standings, aes(name, pointsAgainst)) +
+  geom_hline(aes(yintercept = mean(standings$pointsAgainst), linetype = "mean"), show.legend = TRUE) +
+  geom_bar(stat = "identity", aes(fill = divisionId)) +
+  geom_text(aes(label = pointsAgainst), hjust = 1.2, color = "white", size = 5) +
+  geom_text(aes(0, mean(standings$pointsAgainst), label = round(mean(standings$pointsAgainst), 2), vjust = -0.3, hjust = -0.1)) +
+  coord_flip() +
+  labs(title = "Total Points Against by Team", y = "Points") +
+  theme(axis.title.y = element_blank())
+```
+
+#### Pts by Week {.tabset .tabset-fade}
+
+This is simply each team's point totals for every week over time. Getting a sense for how point trajectories stack up can be difficult to draw from ESPN's website. Putting them all together here adds a better league-wide perspective as well. Make sure to check out individualized team graphs below.
+
+##### League
+
+```{r}
+results1 <- subset(results, totalPoints > 0)
+
+ggplot(results1, aes(week, totalPoints, group = factor(name))) +
+  geom_line(aes(color = factor(name))) +
+  stat_summary(aes(y = totalPoints, group = 1), fun.y = mean, geom = "line", linetype = "dotted") +
+  theme(axis.text.x = element_text(angle = 330, hjust = 0), legend.title = element_blank()) +
+  #theme(axis.text.x = element_text(angle = 330, hjust = 0), legend.title = element_blank(), legend.position = "bottom") +
+  labs(y = "Points") +
+  ggtitle(expression(atop("Point Totals by Week", atop(italic("dotted line = weekly average", ""))))) +
+  scale_fill_viridis(discrete = T)
+```
+
+##### By Team
+
+```{r}
+p <- as.character(standings$name)
+
+j <- function(k) {
+    g <- ggplot(results1, aes(week, totalPoints, group = factor(name))) +
+         geom_line(color = "grey") +
+         geom_line(data = subset(results1, name == k), color = "red") +
+         scale_colour_manual(name = "Team") +
+         # geom_dl(aes(label = TEAM), data = subset(x, TEAM == k), method = "first.qp") +
+         stat_summary(aes(y = totalPoints, group = 1), fun.y = mean, geom = "line", linetype = "dotted") +
+         theme(axis.title.x = element_blank(), axis.text.x = element_text(angle = 330, hjust = 0)) +
+         labs(y = "Points", title = paste("Weekly Points ~", k, "(red line)", sep = " "))
+}
+
+lapply(p, j)
+#lapply(p, function(k) j(k))
+```
+
+#### Pts Density {.tabset .tabset-fade}
+
+##### Distribution by Division
+
+This is a density estimate distribution. My stats professor would be very upset I'm showing you this graph, but I think it taps into a commonly misattributed feature of the points-for debate. On the next tab is a box plot that shows much of the same but is a little more statistically defensible. Either way, strength of division plays an often overlooked role in total season success. Taking a look at how the points fall across the spectrum can provide insight to who got the shaft, and who snuck into the post-season among other things.
+
+```{r}
+ggplot(standings, aes(pointsFor, fill = divisionId)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Distribution of Team Point by Division", x = "Points For", y = "Density")
+```
+
+##### Boxplots by Division
+
+```{r}
+ggplot(standings, aes(divisionId, pointsFor, fill = divisionId)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Team Point by Division", y = "Points For")
+```
+
+#### PF vs. PA
+
+Points for and points against. This is the lowest hanging fruit in fantasy football to investigate the strength of a team without diving deeper into the stats. Like several of these graphs, we can see the face value of these numbers in a table whenever we want, but visualizing them seems to allow for more to be found.
+
+```{r}
+ggplot(standings, aes(pointsFor, pointsAgainst, label = factor(name))) +
+  geom_label(aes(fill = percentage), color = "white", hjust = "inward") +
+  labs(title = "Points For vs Points Against", x = "Points For", y = "Points Against")+
+  scale_fill_gradient(name = "Record")
+```
+
+#### Win Diff
+
+This is a relatively simple look. It really boils down to who beat who. There are two visualizations of this in heatmap form showing individual team performance. To read the chart, find the team of interest on the y-axis and follow to the right to see their personal performance against each respective opponent. Having a higher differential means you beat that opponent more times than they beat you. Way to go.
+
+```{r}
+x1 <- ifelse(boxScore$homePoints > boxScore$awayPoints, 1, -1)
+x2 <- ifelse(boxScore$homePoints < boxScore$awayPoints, 1, -1)
+boxScoreDiff <- data.frame(boxScore, x1, x2)
+
+x <- aggregate(x1 ~ homeTeam + awayTeam, data = boxScoreDiff, sum)
+y <- aggregate(x2 ~ awayTeam + homeTeam, data = boxScoreDiff, sum)
+names(y) <- names(x)
+z <- rbind(x, y, make.row.names = TRUE)
+z <- aggregate(x1 ~ homeTeam + awayTeam, data = z, sum)
+
+ggplot(z, aes(homeTeam, awayTeam)) +
+  geom_tile(aes(fill = x1), color = "darkgrey") +
+  scale_fill_gradient2(low = "#F8766D", high = "#00BFC4", name = "Wins") +
+  scale_x_discrete(expand = c(0, 0)) +
+  scale_y_discrete(expand = c(0, 0)) +
+  theme(panel.background = element_rect(fill = "grey20"), panel.grid = element_blank(), axis.text.x = element_text(angle = 330, hjust = 0), axis.title.x = element_blank(), axis.title.y = element_text(size = 15)) +
+  coord_flip() +
+  labs(title = "Win Differential Between Teams", x = "**Read from this side**")
+```
+
+#### Strength
+
+Below I've put together a collection of items that give a retrospective of team strength and performance. Performance is indicated with team record while the other two variables provide a sense of the landscape of competition for a team. SOS, or strength of schedule, is the averaged weekly point rank that team faced. The better the point ranking, the harder the schedule was for that individual.
+
+Also, I've included ELO. The nature of the ranking is both indicative of historic success and predictive of future results. Higher is better. All of these values taken together give a sense of what each team had to endure this year and how they performed in the end.
+
+```{r}
+ggplot(standingsTable, aes(PCT, SoS, label = factor(Team))) +
+  geom_label(aes(fill = ELO), color = "white", hjust = "inward") +
+  labs(title = "Team Strength", x = "Record", y = "SoS: higher = harder sched")+
+  scale_fill_gradient(name = "ELO Rating")
+```
+
+#### Air Yards {.tabset .tabset-fade}
+
+This is my first graph on actual player performance. Air Yards are a relatively new concept in the football world which can simply be described as the Total Yards - Yards after Catch. They are basically the distance a ball is being thrown to a receiver at the point of catch. This may seem trivial, but this value strikes very specifically at a variety of things ffb owners are trying to isolate in player performance. Looking at the average of this, like I show below, can be a strong indication of how this player is being consistently utilized rather than have their points inflated by the outlier big plays we see every week.
+
+##### All Players
+
+```{r}
+airYardsByName <- airTable %>%
+    group_by(full_name, position, ffbTeam) %>%
+    summarize(targets = mean(tar),
+              airYards = mean(air_yards))
+
+airYardsByName <- subset(airYardsByName, airYardsByName$position %in% c("WR", "RB", "TE"))
+
+# Sort by value to show top performers
+airYardsByName <- airYardsByName[order(-airYardsByName$airYards),]
+airYardsByName$airYards <- round(airYardsByName$airYards, digits = 2)
+airYardsByName$targets <- round(airYardsByName$targets, digits = 2)
+airYardsUnrostered <- subset(airYardsByName, airYardsByName$ffbTeam == 0)
+
+# All players separated by position
+ggplot(airYardsByName, aes(x = targets, y = airYards, color = position, label = full_name)) +
+    geom_point(size = 2, show.legend = F) +
+    # geom_label_repel(data = subset(airYardsByName, airYards > 100 | targets > 10))
+    geom_label_repel(data = Reduce(rbind, by(airYardsByName, airYardsByName["position"], head, n = 5)), color = "black", box.padding = 1, alpha = 0.6, force = 40, label.padding = 0.1) +
+    facet_grid(. ~ position) +
+    theme_bw()
+
+```
+
+##### Unrostered
+
+```{r}
+# Filtered for unrostered players
+ggplot(airYardsUnrostered, aes(x = targets, y = airYards, color = position, label = full_name)) +
+    geom_point(data = airYardsByName, color = "grey") +
+    geom_point(show.legend = F) +
+    # geom_label_repel(data = subset(airYardsByName, airYards > 100 | targets > 10))
+    geom_label_repel(data = Reduce(rbind, by(airYardsUnrostered, airYardsUnrostered["position"], head, n = 5)), color = "black", alpha = 0.6, force = 40, label.padding = 0.1) +
+    facet_grid(. ~ position) +
+    theme_bw()
+```
+
+##### Table
+
+* Filter the `ffbTeam` variable to 0 in order to see unrostered players.
+
+```{r}
+DT::datatable(airYardsByName, filter = "top", style = "bootstrap")
+```
+

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg width="21.167mm" height="21.167mm" version="1.1" viewBox="0 0 21.167 21.167" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <defs>
+  <filter id="filter11940-2" color-interpolation-filters="sRGB">
+   <feFlood flood-color="rgb(0,0,0)" flood-opacity=".098039" result="flood"/>
+   <feComposite in="flood" in2="SourceGraphic" operator="out" result="composite1"/>
+   <feGaussianBlur in="composite1" result="blur"/>
+   <feOffset dx="-0.5" dy="-2.77556e-17" result="offset"/>
+   <feComposite in="offset" in2="SourceGraphic" operator="atop" result="composite2"/>
+  </filter>
+  <filter id="filter11964-2" color-interpolation-filters="sRGB">
+   <feFlood flood-color="rgb(0,0,0)" flood-opacity=".098039" result="flood"/>
+   <feComposite in="flood" in2="SourceGraphic" operator="out" result="composite1"/>
+   <feGaussianBlur in="composite1" result="blur"/>
+   <feOffset dx="-0.5" dy="-0.2" result="offset"/>
+   <feComposite in="offset" in2="SourceGraphic" operator="atop" result="composite2"/>
+  </filter>
+  <filter id="filter11712-9" color-interpolation-filters="sRGB">
+   <feFlood flood-color="rgb(0,0,0)" flood-opacity=".098039" result="flood"/>
+   <feComposite in="flood" in2="SourceGraphic" operator="out" result="composite1"/>
+   <feGaussianBlur in="composite1" result="blur"/>
+   <feOffset dx="-1" dy="-1" result="offset"/>
+   <feComposite in="offset" in2="SourceGraphic" operator="atop" result="composite2"/>
+  </filter>
+  <filter id="filter12012-3" color-interpolation-filters="sRGB">
+   <feFlood flood-color="rgb(0,0,0)" flood-opacity=".098039" result="flood"/>
+   <feComposite in="flood" in2="SourceGraphic" operator="out" result="composite1"/>
+   <feGaussianBlur in="composite1" result="blur"/>
+   <feOffset dx="1" dy="0" result="offset"/>
+   <feComposite in="offset" in2="SourceGraphic" operator="atop" result="composite2"/>
+  </filter>
+  <filter id="filter12342-0" color-interpolation-filters="sRGB">
+   <feFlood flood-color="rgb(0,0,0)" flood-opacity=".098039" result="flood"/>
+   <feComposite in="flood" in2="SourceGraphic" operator="in" result="composite1"/>
+   <feGaussianBlur in="composite1" result="blur"/>
+   <feOffset dx="5" dy="5" result="offset"/>
+   <feComposite in="SourceGraphic" in2="offset" result="composite2"/>
+  </filter>
+  <filter id="filter11676-1" color-interpolation-filters="sRGB">
+   <feFlood flood-color="rgb(0,0,0)" flood-opacity=".098039" result="flood"/>
+   <feComposite in="flood" in2="SourceGraphic" operator="out" result="composite1"/>
+   <feGaussianBlur in="composite1" result="blur"/>
+   <feOffset dx="0.6" dy="0.6" result="offset"/>
+   <feComposite in="offset" in2="SourceGraphic" operator="atop" result="composite2"/>
+  </filter>
+ </defs>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g transform="translate(-75.976 -141.65)">
+  <g transform="matrix(.092977 0 0 .092977 .78626 112.2)">
+   <rect x="808.7" y="316.7" width="227.66" height="227.66" rx="113.83" ry="113.83" fill="#f8766d"/>
+   <g fill="#f2f2f2">
+    <path transform="matrix(4.9864 0 0 4.9864 368.96 -2263.8)" d="m115.79 530.02a4.365 8.2581 0 0 0 2.1836 7.1504 4.365 8.2581 0 0 0 4.3652 0 4.365 8.2581 0 0 0 2.1816-7.1504h-4.3652zm1.2402 1.1719h6.252a3.1263 5.9146 0 0 1-1.5625 5.1211 3.1263 5.9146 0 0 1-3.127 0 3.1263 5.9146 0 0 1-1.5625-5.1211z" filter="url(#filter11940-2)"/>
+    <path transform="matrix(4.9864 0 0 4.9864 368.96 -2263.8)" d="m97.508 530.02a4.365 8.2581 0 0 0 2.1816 7.1504 4.365 8.2581 0 0 0 4.3652 0 4.365 8.2581 0 0 0 2.1836-7.1504h-4.3652zm1.2383 1.1719h6.2539a3.1263 5.9146 0 0 1-1.5644 5.1211 3.1263 5.9146 0 0 1-3.125 0 3.1263 5.9146 0 0 1-1.5644-5.1211z" filter="url(#filter11964-2)"/>
+    <path transform="matrix(4.9864 0 0 4.9864 368.96 -2263.8)" d="m121.4 528.07a10.382 18.463 0 0 1-5.1908 15.989 10.382 18.463 0 0 1-10.382 0 10.382 18.463 0 0 1-5.1908-15.989h10.382z" filter="url(#filter11712-9)"/>
+    <rect x="914.88" y="444.96" width="15.295" height="31.766" rx="56.914" ry="0"/>
+    <path transform="matrix(-4.9864 0 0 -4.9864 368.96 -2263.8)" d="m-104.77-552.43a6.2452 3.4212 0 0 1-3.1226 2.9629 6.2452 3.4212 0 0 1-6.2452 0 6.2452 3.4212 0 0 1-3.1226-2.9629h6.2452z" filter="url(#filter12012-3)"/>
+   </g>
+   <rect x="887.53" y="488.21" width="70.003" height="3.5245" rx="0" ry="0" fill="#b3b3b3" filter="url(#filter12342-0)"/>
+   <rect x="884.3" y="491.28" width="76.45" height="11.807" rx="0" ry="0" fill="#444"/>
+   <g transform="matrix(4.9864 0 0 4.9864 27.477 -2229)" filter="url(#filter11676-1)">
+    <rect x="175" y="527.19" width="1.5" height="3" rx="0" fill="#00bfc4"/>
+    <rect x="177.5" y="526.19" width="1.5" height="4" rx="0" fill="#c77cff"/>
+    <rect x="180" y="524.19" width="1.5" height="6" rx="0" fill="#ff61cc"/>
+    <rect x="182.5" y="525.19" width="1.5" height="5" rx="0" fill="#00a9ff"/>
+   </g>
+  </g>
+ </g>
+</svg>
